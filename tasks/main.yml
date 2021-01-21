@@ -1,0 +1,13 @@
+---
+- name: gather required facts
+  setup:
+    gather_subset: [min]
+  when: ansible_distribution_release is not defined
+
+- name: install
+  include_tasks: install.yml
+  when: phpfpm_setup == "full" or phpfpm_setup == "install"
+
+- name: configure
+  import_tasks: configure.yml
+  when: phpfpm_setup == "full" or phpfpm_setup == "configure"

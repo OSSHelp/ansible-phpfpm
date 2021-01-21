@@ -1,0 +1,15 @@
+{{ phpfpm_php_log_dir }}/*_access.log
+{{ phpfpm_php_log_dir }}/*_error.log
+{{ phpfpm_php_log_dir }}/*_slow.log
+{
+    rotate 14
+    daily
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+	/usr/lib/php/php{{ phpfpm_version_number }}-fpm-reopenlogs
+    endscript
+    create 642 root adm
+}

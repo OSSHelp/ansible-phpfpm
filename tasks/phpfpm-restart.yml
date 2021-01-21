@@ -1,0 +1,26 @@
+---
+- name: configuration check
+  block:
+    - name: check php-fpm configuration
+      command: "{{ phpfpm_binary }} -t"
+      ignore_errors: true
+      register: phpfpm_syntax_check
+      changed_when: false
+
+    - name: show errors
+      debug:
+        msg: "{{ phpfpm_syntax_check.stderr }}"
+      when: phpfpm_syntax_check.rc != 0
+
+    - name: Notify if bad syntax
+      assert:
+        that:
+          - phpfpm_syntax_check.rc == 0
+        fail_msg: "PHP-FPM configuration check failed. You should check debug information above and fix the problem(s)."
+
+    - name: restart php-fpm service
+      systemd:
+        name: "{{ phpfpm_service }}"
+        state: restarted
+      when: phpfpm_syntax_check.rc == 0
+  when: not ansible_check_mode

@@ -1,0 +1,40 @@
+---
+phpfpm_setup: full
+phpfpm_ppa: "ppa:ondrej/php"
+phpfpm_version: default
+
+phpfpm_version_by_distribution:
+  xenial: 7.0
+  bionic: 7.2
+  focal: 7.4
+
+phpfpm_version_by_ppa: "{{ phpfpm_version|replace('ppa-', '') }}"
+phpfpm_version_number: "{{ phpfpm_version_by_ppa if 'ppa' in phpfpm_version else phpfpm_version_by_distribution[ansible_distribution_release] }}"
+
+phpfpm_packages:
+  - "php{{ phpfpm_version_number }}-fpm"
+
+phpfpm_modules_wo_php_version:
+  - memcached
+  - mongodb
+  - pear
+  - redis
+
+phpfpm_service: php{{ phpfpm_version_number }}-fpm
+phpfpm_binary: php-fpm{{ phpfpm_version_number }}
+phpfpm_conf_dir: /etc/php/{{ phpfpm_version_number }}
+phpfpm_pools_dir: "{{ phpfpm_conf_dir }}/fpm/pool.d"
+phpfpm_disabled_pools_dir: "{{ phpfpm_conf_dir }}/fpm/pool.disabled"
+phpfpm_php_log_dir: /var/log/php
+phpfpm_mail_log_path: "{{ phpfpm_php_log_dir }}/mail.log"
+
+phpfpm_default_php_params:
+  "expose_php": "Off"
+  "mail.add_x_header": "Off"
+  "mail.log": "{{ phpfpm_mail_log_path }}"
+
+phpfpm_modules: []
+phpfpm_php_params: {}
+phpfpm_pools: []
+
+phpfpm_disable_pools: false

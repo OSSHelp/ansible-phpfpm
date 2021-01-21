@@ -1,0 +1,62 @@
+---
+- name: add ppa
+  apt_repository:
+    repo: "{{ phpfpm_ppa }}"
+    state: "{{ 'present' if 'ppa' in phpfpm_version else 'absent' }}"
+
+- name: install packages
+  apt:
+    name: "{{ phpfpm_packages }}"
+    update_cache: yes
+    cache_valid_time: 86400
+
+- name: create modules package list with php version
+  set_fact:
+    phpfpm_modules_packages: "{{ phpfpm_modules_packages|default([])  + [ 'php' ~ phpfpm_version_number ~ '-' ~ item ] }}"
+  when: item not in phpfpm_modules_wo_php_version
+  loop: "{{ phpfpm_modules }}"
+  no_log: yes
+
+- name: append modules package list with no php version
+  set_fact:
+    phpfpm_modules_packages: "{{ phpfpm_modules_packages|default([])  + [ 'php-' ~ item ] }}"
+  when: item in phpfpm_modules_wo_php_version
+  loop: "{{ phpfpm_modules }}"
+  no_log: yes
+
+- name: install modules
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    cache_valid_time: 86400
+  loop: "{{ phpfpm_modules_packages }}"
+  when: phpfpm_modules_packages is defined
+  notify: restart php-fpm service
+
+- name: create php log dir
+  file:
+    path: "{{ phpfpm_php_log_dir }}"
+    state: directory
+    mode: "0711"
+
+- name: create php mail log file
+  copy:
+    content: ""
+    dest: "{{ phpfpm_mail_log_path }}"
+    force: false
+    mode: "0622"
+
+- name: create logrotate configs
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - {src: logrotate_phpmail.j2, dest: /etc/logrotate.d/phpmail}
+    - {src: logrotate_pools.j2, dest: "/etc/logrotate.d/php{{ phpfpm_version_number }}-fpm_pools"}
+
+- name: fix default logrotate configs (adm group)
+  lineinfile:
+    path: "/etc/logrotate.d/php{{ phpfpm_version_number }}-fpm"
+    insertafter: 'endscript'
+    regexp: '^(\s+)?create'
+    line: "        create 641 root adm"

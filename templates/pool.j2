@@ -1,0 +1,55 @@
+[{{ pool.name }}]
+
+user = {{ pool.user }}
+group = {{ pool.group|default(pool.user) }}
+
+listen = {{ pool.listen|default('/run/php/php' ~ phpfpm_version_number ~ '-fpm_' ~ pool.name ~ '.sock') }}
+{% if pool.listen_backlog is defined %} listen.backlog = {{ pool.listen_backlog }}
+{% endif %}
+{% if not pool.listen|default('socket')|string|regex_search('^\d') %}listen.owner = {{ pool.listen_owner|default('www-data') }}
+listen.group = {{ pool.listen_group|default('www-data') }}
+listen.mode = {{ pool.listen_mode|default('0660') }}
+{% endif %}
+{% if pool.listen_allowed_clients is defined %}listen.allowed_clients = {{ pool.listen_allowed_clients }}
+{% endif %}
+{% if pool.process_priority is defined %}process.priority = {{ pool.process_priority }}
+{% endif %}
+{% if pool.process_dumpable is defined %}process.dumpable = {{ pool.process_dumpable }}
+{% endif %}
+pm = {{ pool.pm|default('dynamic') }}
+pm.max_children = {{ pool.max_children|default('5') }}
+pm.start_servers = {{ pool.start_servers|default('2') }}
+pm.min_spare_servers = {{ pool.min_spare_servers|default('1') }}
+pm.max_spare_servers = {{ pool.max_spare_servers|default('3') }}
+pm.process_idle_timeout = {{ pool.process_idle_timeout|default('10s') }}
+pm.max_requests = {{ pool.max_requests|default('0') }}
+pm.status_path = {{ pool.status_path|default('/fpm-status') }}
+ping.path = {{ pool.ping_path|default('/fpm-ping') }}
+ping.response = {{ pool.ping_response|default('pong') }}
+{% if pool.access_log is defined %}access.log = {{ pool.access_log if pool.access_log|regex_search('^/') else '/var/log/php/' ~ pool.name ~ '_access.log' }}
+{% endif %}
+{% if pool.access_format is defined %}access.format = {{ pool.access_format }}
+{% endif %}
+{% if pool.slowlog is defined or pool.request_slowlog_timeout is defined %}slowlog = {{ pool.slowlog|default('/var/log/php/' ~ pool.name ~ '_slow.log') }}
+request_slowlog_timeout = {{ pool.request_slowlog_timeout|default('0') }}
+{% if phpfpm_version_number == '7.2' or phpfpm_version_number == '7.3' or phpfpm_version_number == '7.4' %}request_slowlog_trace_depth = {{ pool.request_slowlog_trace_depth|default('20') }}
+{% endif %}
+{% endif %}
+request_terminate_timeout = {{ pool.request_terminate_timeout|default('0') }}
+{% if pool.rlimit_files is defined %}rlimit_files = {{ pool.rlimit_files }}
+{% endif %}
+{% if pool.rlimit_core is defined %}rlimit_core = {{ pool.rlimit_core }}
+{% endif %}
+{% if pool.chroot is defined %}chroot = {{ pool.chroot }}
+{% endif %}
+{% if pool.chdir is defined %}chdir = {{ pool.chdir }}
+{% endif %}
+catch_workers_output = {{ pool.catch_workers_output|default('no') }}
+{% if pool.catch_workers_output|default('no')|string == 'yes' and (phpfpm_version_number == '7.3' or phpfpm_version_number == '7.4') %}decorate_workers_output = {{ pool.decorate_workers_output|default('yes') }}
+{% endif %}
+clear_env = {{ pool.clear_env|default('yes') }}
+security.limit_extensions = {{ pool.security_limit_extensions|default('.php') }}
+{% for env in pool.envs|default([]) %}env[{{ e.name }}] = {{ e.value }}
+{% endfor %}
+{% for param in pool.php_params|default([]) %}php_{{ 'admin_' if param.admin|default(false) else '' }}{{ param.type|default('value') }}[{{ param.name }}] = {{ param.value }}
+{% endfor %}

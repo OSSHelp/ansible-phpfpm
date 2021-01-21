@@ -1,0 +1,54 @@
+---
+- name: deploy global php configuration
+  lineinfile:
+    create: yes
+    dest: "{{ phpfpm_conf_dir }}/mods-available/custom.ini"
+    regexp: "^{{ item.key }} "
+    line: "{{ item.key }} = {{ item.value }}"
+  notify: restart php-fpm service
+  loop: "{{ phpfpm_default_php_params|combine(phpfpm_php_params)|dict2items }}"
+
+- name: create a symbolic link to custom.ini for php-fpm
+  file:
+    src: "{{ phpfpm_conf_dir }}/mods-available/custom.ini"
+    dest: "{{ phpfpm_conf_dir }}/fpm/conf.d/99-custom.ini"
+    state: link
+
+- name: create a symbolic link to custom.ini for cli
+  file:
+    src: "{{ phpfpm_conf_dir }}/mods-available/custom.ini"
+    dest: "{{ phpfpm_conf_dir }}/cli/conf.d/99-custom.ini"
+    state: link
+
+- name: remove default pool
+  file:
+    dest: "{{ phpfpm_pools_dir }}/www.conf"
+    state: absent
+  when: phpfpm_pools|length > 0 and not 'www' in phpfpm_pools|map(attribute='name')|list and not phpfpm_disable_pools
+  notify: restart php-fpm service
+
+- name: create enabled pools configs
+  template:
+    src: pool.j2
+    dest: "{{ phpfpm_pools_dir }}/{{ pool.name }}.conf"
+  vars:
+    pool: "{{ item }}"
+  loop: "{{ phpfpm_pools }}"
+  when: not phpfpm_disable_pools
+  notify: restart php-fpm service
+
+- name: create disabled pools configs
+  block:
+    - name: create dir for disabled pools
+      file:
+        path: "{{ phpfpm_disabled_pools_dir }}"
+        state: directory
+        mode: 0644
+    - name: generate pools configs
+      template:
+        src: pool.j2
+        dest: "{{ phpfpm_disabled_pools_dir }}/{{ pool.name }}.conf"
+      vars:
+        pool: "{{ item }}"
+      loop: "{{ phpfpm_pools }}"
+  when: phpfpm_disable_pools
