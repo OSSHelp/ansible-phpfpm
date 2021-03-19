@@ -105,6 +105,7 @@ Other parameters [here](default/main.yml).
 - ppa-7.2
 - ppa-7.3
 - ppa-7.4
+- ppa-8.0
 
 ## FAQ
 

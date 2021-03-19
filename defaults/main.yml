@@ -14,11 +14,14 @@ phpfpm_version_number: "{{ phpfpm_version_by_ppa if 'ppa' in phpfpm_version else
 phpfpm_packages:
   - "php{{ phpfpm_version_number }}-fpm"
 
-phpfpm_modules_wo_php_version:
-  - memcached
-  - mongodb
+phpfpm_modules_wo_php_version_default:
   - pear
+  - memcached
   - redis
+  - mongodb
+
+phpfpm_modules_wo_php_version_ppa:
+  - pear
 
 phpfpm_service: php{{ phpfpm_version_number }}-fpm
 phpfpm_binary: php-fpm{{ phpfpm_version_number }}

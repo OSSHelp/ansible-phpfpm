@@ -13,14 +13,16 @@
 - name: create modules package list with php version
   set_fact:
     phpfpm_modules_packages: "{{ phpfpm_modules_packages|default([])  + [ 'php' ~ phpfpm_version_number ~ '-' ~ item ] }}"
-  when: item not in phpfpm_modules_wo_php_version
+  when: (item not in phpfpm_modules_wo_php_version_default and phpfpm_version == "default") or
+        (item not in phpfpm_modules_wo_php_version_ppa and phpfpm_version != "default")
   loop: "{{ phpfpm_modules }}"
   no_log: yes
 
 - name: append modules package list with no php version
   set_fact:
     phpfpm_modules_packages: "{{ phpfpm_modules_packages|default([])  + [ 'php-' ~ item ] }}"
-  when: item in phpfpm_modules_wo_php_version
+  when: (item in phpfpm_modules_wo_php_version_ppa and phpfpm_version != "default") or
+        (item in phpfpm_modules_wo_php_version_default and phpfpm_version == "default")
   loop: "{{ phpfpm_modules }}"
   no_log: yes
 
