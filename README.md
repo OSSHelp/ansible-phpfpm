@@ -65,6 +65,7 @@ Role for Ansible, which installs php-fpm, php modules, generate configs from Ubu
 | `phpfpm_modules` | `[]` | List of PHP modules |
 | `phpfpm_php_params` | `{}` | List of global PHP parameters |
 | `phpfpm_pools` | `[]` | List of php-fpm pools |
+| `phpfpm_initial_setup` | `false` | Whether to prepare initial-setup script, ensuring the presence of necessary directories/files before the service start |
 | `phpfpm_disable_pools` | `false` | If set to `true`, pools will be created in `fpm/pool.disabled` directory. Make sure to add proper post-deploy tests. |
 
 ### Pool parameters
@@ -98,6 +99,8 @@ Other parameters [here](default/main.yml).
 
 ## Available versions
 
+Versions from ppa only avalaible for bionic and focal!
+
 - default
 - ppa-5.6
 - ppa-7.0
@@ -121,7 +124,6 @@ Other parameters [here](default/main.yml).
 
 - enable/disable modules functional
 - move default pool parameters from pool.j2 to defaults
-- ExecStartPre - create logdir and log files
 
 ## License
 

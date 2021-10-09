@@ -1,0 +1,7 @@
+[Service]
+{% if ansible_distribution_release == 'bionic' or ansible_distribution_release == 'focal' %}
+ExecStartPre=+{{ phpfpm_templates_dir }}/php-fpm/initial-setup
+{% elif ansible_distribution_release == 'xenial' %}
+PermissionsStartOnly=true
+ExecStartPre={{ phpfpm_templates_dir }}/php-fpm/initial-setup
+{% endif %}

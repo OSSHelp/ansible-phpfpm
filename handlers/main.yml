@@ -1,3 +1,7 @@
 ---
 - name: restart php-fpm service
   include_tasks: phpfpm-restart.yml
+
+- name: reload php-fpm unit
+  systemd:
+    daemon-reload: yes

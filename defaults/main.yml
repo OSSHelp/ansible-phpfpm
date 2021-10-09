@@ -3,6 +3,9 @@ phpfpm_setup: full
 phpfpm_ppa: "ppa:ondrej/php"
 phpfpm_version: default
 
+phpfpm_templates_dir: /usr/local/osshelp
+phpfpm_initial_setup: false
+
 phpfpm_version_by_distribution:
   xenial: 7.0
   bionic: 7.2

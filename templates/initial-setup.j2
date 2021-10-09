@@ -1,0 +1,22 @@
+#!/bin/bash
+
+log_dir="/var/log/php-fpm"
+
+test -d "${log_dir}" || {
+  mkdir -pv "${log_dir}" && \
+    chmod 755 "${log_dir}" && \
+      chown root:root "${log_dir}"
+}
+
+users_list=({% for pool in phpfpm_pools %}{{pool.user}}:{{ pool.group|default(pool.user) }} {% endfor %})
+
+{% raw %}test "${#users_list[@]}" -gt 0 && {{% endraw %}
+  for element in "${users_list[@]}"; do
+    user="${element/:*/}"
+    group="${element/*:/}"
+    test -d /home/"${user}" || {
+      mkdir /home/"${user}"
+      chown "${user}":"${group}" /home/"${user}"
+    }
+  done
+}

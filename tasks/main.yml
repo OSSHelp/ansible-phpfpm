@@ -8,6 +8,10 @@
   include_tasks: install.yml
   when: phpfpm_setup == "full" or phpfpm_setup == "install"
 
+- name: place initial-setup script
+  include_tasks: initial-setup.yml
+  when: phpfpm_initial_setup
+
 - name: configure
   import_tasks: configure.yml
   when: phpfpm_setup == "full" or phpfpm_setup == "configure"
