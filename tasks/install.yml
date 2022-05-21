@@ -28,10 +28,9 @@
 
 - name: install modules
   apt:
-    name: "{{ item }}"
+    name: "{{ phpfpm_modules_packages }}"
     update_cache: yes
     cache_valid_time: 86400
-  loop: "{{ phpfpm_modules_packages }}"
   when: phpfpm_modules_packages is defined
   notify: restart php-fpm service
 
